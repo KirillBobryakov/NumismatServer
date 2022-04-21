@@ -1,36 +1,59 @@
 package numismat;
 
 
-import org.json.JSONObject;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import numismat.entity.Piece;
+import numismat.entity.PieceRepository;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class MathService {
 
-    @GetMapping("/")
-    public String index(){
-        String message;
-        JSONObject json = new JSONObject();
-        json.put("title", "student");
-        json.put("description", "sdfsdfsdfs");
+    private final PieceRepository pieceRepository;
 
-//        JSONArray array = new JSONArray();
-//        JSONObject item = new JSONObject();
-//        item.put("information", "test");
-//        item.put("id", 3);
-//        item.put("name", "course1");
-//        array.put(item);
-//
-//        json.put("course", array);
-//
-        message = json.toString();
-
-        return message;
-
+    public MathService(PieceRepository pieceRepository) {
+        this.pieceRepository = pieceRepository;
     }
 
+    @PutMapping
+    Mono<Piece> createOrUpdatePiece(@RequestBody Piece piece){
+        return pieceRepository.save(piece);
+    }
 
+    @PutMapping("/pieces/{id}")
+    public Piece replacePiece(@RequestBody Piece newPiece, @PathVariable Long id) {
+
+        return pieceRepository.findById(id)
+                .map(piece -> {
+                    piece.setNumistaURL(newPiece.getNumistaURL());
+                    return pieceRepository.save(piece);
+                }).blockOptional()
+                .orElseGet(() -> {
+                    newPiece.setId(id);
+                    return pieceRepository.save(newPiece);
+                }).block();
+    }
+
+    @GetMapping("/")
+    public Piece index(){
+        Piece piece = new Piece();
+        piece.setNumistaURL("https://en.numista.com/catalogue/pieces854.html");
+
+        return createOrUpdatePiece(piece).block();
+    }
+
+    @PostMapping("/pieces")
+    public Piece savePiece(@RequestBody Piece piece){
+        return createOrUpdatePiece(piece).block();
+    }
+
+    @GetMapping("/pieces")
+    List<Piece> all() {
+        return pieceRepository.findAll().toStream().collect(Collectors.toList());
+    }
 
 //    @RequestMethod("GET")
 //    @ResourcePath("sum")
