@@ -1,8 +1,8 @@
 package numismat;
 
 
-import numismat.entity.Piece;
-import numismat.entity.PieceRepository;
+import numismat.entity.pieces.Piece;
+import numismat.entity.pieces.PieceRepository;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 

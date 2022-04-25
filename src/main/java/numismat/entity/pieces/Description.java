@@ -1,6 +1,7 @@
-package numismat.entity;
+package numismat.entity.pieces;
 
 
+import numismat.entity.Photo;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
@@ -19,6 +20,11 @@ public class Description {
 
     private String title;
     private String text;
+
+    public Description(String title, String text) {
+        this.title = title;
+        this.text = text;
+    }
 
     @Relationship(type = "HAS_PHOTO", direction = Relationship.Direction.OUTGOING)
     private Set<Photo> photoSet;

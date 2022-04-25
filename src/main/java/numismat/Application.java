@@ -1,5 +1,7 @@
 package numismat;
 
+import numismat.entity.pieces.PieceController;
+import numismat.entity.pieces.PieceRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -23,7 +25,11 @@ public class Application {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
+
     }
+
+
+
 //
 //    @Bean
 //    public CommandLineRunner commandLineRunner (ApplicationContext applicationContext) {

@@ -1,5 +1,8 @@
 package numista;
 
+import numismat.entity.pieces.DescriptionTitle;
+import numismat.entity.pieces.PieceRepository;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -10,26 +13,63 @@ public class NumistaPiece {
         Banknote,
         Exonumia
     }
+//
+//
+//    public enum DescriptionTitle {
+//        Commemorative_issue("Commemorative issue", 1),
+//        Obverse("Obverse", 2),
+//        Reverse("Reverse", 3),
+//        Edge("Edge", 4),
+//        Watermark("Watermark", 5),
+//        Mints("Mints", 6),
+//        Comments("Comments", 7);
+//
+//        private final String title;
+//        private final int code;
+//
+//        DescriptionTitle(String s, int c) {
+//            this.title = s;
+//            this.code = c;
+//        }
+//
+//        @Override
+//        public String toString() {
+//            return title;
+//        }
+//
+//        public int getCode() {
+//            return code;
+//        }
+//    }
 
-    public enum DescriptionTitle {
-        Commemorative_issue("Commemorative issue"),
-        Obverse("Obverse"),
-        Reverse("Reverse"),
-        Edge("Edge"),
-        Watermark("Watermark"),
-        Mints("Mints"),
-        Comments("Comments");
+    public enum MainFeatureName {
+        Issuer("Issuer"),
+        King("King"),
+        Queen("Queen"),
+        Period("Period"),
+        Currency("Currency"),
+        Type("Type"),
+        Year("Year"),
+        Years("Years"),
+        Value("Value"),
+        Composition("Composition"),
+        Weight("Weight"),
+        Diameter("Diameter"),
+        Thickness("Thickness"),
+        Size("Size"),
+        Shape("Shape"),
+        Technique("Technique"),
+        Orientation("Orientation"),
+        Demonetized("Demonetized"),
+        NumistaNumber("Number"),
+        References("References");
 
-        private final String title;
+        private final String name;
 
-        DescriptionTitle(String s) {
-            title = s;
-        }
+        MainFeatureName(String s) { name = s; }
 
         @Override
-        public String toString() {
-            return title;
-        }
+        public String toString() { return name; }
     }
 
     public PieceType pieceType;
@@ -37,7 +77,7 @@ public class NumistaPiece {
     public HashMap<String, String> mainProperties = new HashMap<>();
     public String obversePhotoLink = "";
     public String reversePhotoLink = "";
-    public HashMap<DescriptionTitle, DescriptionItem> descriptionHashMap = new HashMap<>();
+    public HashMap<String, DescriptionItem> descriptionHashMap = new HashMap<>();
     public ArrayList<CollectionItem> collection = new ArrayList<>();
 
 
@@ -69,6 +109,7 @@ public class NumistaPiece {
     }
 
 
+
     public static class DescriptionItem {
         public String text;
         public ArrayList<String> photoLinks = new ArrayList<>();
@@ -90,7 +131,7 @@ public class NumistaPiece {
         }
     }
 
-    private static class Territory {
+    public static class Territory {
         public String name;
         public Territory child;
 
@@ -98,6 +139,8 @@ public class NumistaPiece {
             this.name = name;
         }
     }
+
+
 
 
 }

@@ -14,4 +14,15 @@ public class Issuer {
 
     private String name;
 
+    public Issuer(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

@@ -1,4 +1,4 @@
-package numismat.entity;
+package numismat.entity.pieces;
 
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 

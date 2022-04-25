@@ -18,6 +18,11 @@ public class Territory {
 
     private String name;
 
+    public Territory(String name) {
+        this.name = name;
+    }
+
+
 
     @Relationship(type = "LOCATED_IN", direction = Relationship.Direction.OUTGOING)
     private Territory parentTerritory;
