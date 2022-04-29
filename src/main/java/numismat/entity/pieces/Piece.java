@@ -19,6 +19,8 @@ public class Piece {
 
     private String numistaURL;
 
+    private String name;
+
     @Relationship(type = "ISSUED_IN", direction = Relationship.Direction.OUTGOING)
     private Territory territory;
 
@@ -55,12 +57,24 @@ public class Piece {
     @Relationship(type = "HAS_DESCRIPTION", direction = Relationship.Direction.OUTGOING)
     private Set<Description> descriptions;
 
+    @Relationship(type = "CONSISTS_OF", direction = Relationship.Direction.OUTGOING)
+    private Set<CollectionPiece> collectionPieces;
+
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getNumistaURL() {
@@ -238,4 +252,20 @@ public class Piece {
     public void setReferences(String references) {
         this.references = references;
     }
+
+    public Set<CollectionPiece> getCollectionPieces() {
+        return collectionPieces;
+    }
+
+    public void setCollectionPieces(Set<CollectionPiece> collectionPieces) {
+        this.collectionPieces = collectionPieces;
+    }
+
+    public void addCollectionPiece(CollectionPiece collectionPiece){
+        if(collectionPieces == null){
+            collectionPieces = new HashSet<>();
+        }
+        collectionPieces.add(collectionPiece);
+    }
+
 }

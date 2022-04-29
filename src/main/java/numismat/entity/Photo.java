@@ -7,6 +7,8 @@ import org.springframework.data.neo4j.core.schema.Node;
 @Node(labels = "PHOTO")
 public class Photo {
 
+    public static final String LOCAL_PRED = "/Users/kirillbobryakov/IDEAProjects/NumismatServer/files/";
+
     @Id
     @GeneratedValue
     private Long id;
@@ -22,6 +24,12 @@ public class Photo {
 
     public Photo(String link) {
         this.link = link;
+    }
+
+    public Photo(String source, String link, String localPath) {
+        this.source = source;
+        this.link = link;
+        this.localPath = localPath;
     }
 
     public Long getId() {

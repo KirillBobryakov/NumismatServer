@@ -20,10 +20,15 @@ public class NumistaLoader {
 
         Document doc = null;
         try {
-            doc = Jsoup.connect("https://en.numista.com/catalogue/pieces42.html").get();
+            doc = Jsoup.connect("https://en.numista.com/catalogue/pieces4627.html").get();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        //Name
+        Element nameElements = doc.selectFirst("#main_title");
+        System.out.println(nameElements.selectFirst("h1").text());
+
 
         //Type
         Elements main_breadcrumb = doc.selectFirst("#main_breadcrumb").children();

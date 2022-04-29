@@ -1,6 +1,7 @@
 package numista;
 
 import numismat.entity.pieces.DescriptionTitle;
+import numismat.entity.pieces.NumistaCollectionItem;
 import numismat.entity.pieces.PieceRepository;
 
 import java.util.ArrayList;
@@ -72,18 +73,19 @@ public class NumistaPiece {
         public String toString() { return name; }
     }
 
+    public String name;
     public PieceType pieceType;
     public Territory territory;
     public HashMap<String, String> mainProperties = new HashMap<>();
     public String obversePhotoLink = "";
     public String reversePhotoLink = "";
     public HashMap<String, DescriptionItem> descriptionHashMap = new HashMap<>();
-    public ArrayList<CollectionItem> collection = new ArrayList<>();
+    public ArrayList<NumistaCollectionItem> collection = new ArrayList<>();
 
 
 
     public void addCollectionItem(String date, String tirage, String comment){
-        collection.add(new CollectionItem(date, tirage, comment));
+        collection.add(new NumistaCollectionItem(date, tirage, comment));
     }
 
     public void addTerritory(String territory){
@@ -119,17 +121,6 @@ public class NumistaPiece {
         }
     }
 
-    private static class CollectionItem {
-        public String date = "";
-        public String tirage = "";
-        public String comment = "";
-
-        public CollectionItem(String date, String tirage, String comment) {
-            this.date = date;
-            this.tirage = tirage;
-            this.comment = comment;
-        }
-    }
 
     public static class Territory {
         public String name;
