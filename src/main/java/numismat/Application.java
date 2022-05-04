@@ -23,6 +23,9 @@ import java.util.Arrays;
 //@EnableTransactionManagement
 public class Application {
 
+    public static final String LOCAL_PRED = "/Users/kirillbobryakov/IDEAProjects/NumismatServer/files/";
+
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
 

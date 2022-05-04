@@ -20,6 +20,7 @@ public class Description {
 
     private String title;
     private String text;
+    private String mentions;
 
     public Description(String title, String text) {
         this.title = title;
@@ -33,7 +34,17 @@ public class Description {
         if (photoSet == null) {
             photoSet = new HashSet<>();
         }
-        photoSet.add(photo);
+        if(photo != null) {
+            photoSet.add(photo);
+        }
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -50,6 +61,14 @@ public class Description {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getMentions() {
+        return mentions;
+    }
+
+    public void setMentions(String mentions) {
+        this.mentions = mentions;
     }
 
     public Set<Photo> getPhotoSet() {

@@ -1,6 +1,8 @@
 package numismat.entity.pieces;
 
+import numismat.Application;
 import numismat.entity.*;
+import numista.NumistaLoader;
 import numista.NumistaPiece;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/pieces")
@@ -58,6 +61,7 @@ public class PieceController {
             loadFromNumista(i);
         }
 
+
         return true;
     }
 
@@ -66,7 +70,7 @@ public class PieceController {
     public boolean loadFromNumista(@PathVariable int number){
         String url = "https://en.numista.com/catalogue/pieces"+number+".html";
 
-        NumistaPiece numistaPiece = loadNumistaPiece(url);
+        NumistaPiece numistaPiece = NumistaLoader.loadNumistaPiece(url);
 
         if(numistaPiece == null) {
             System.out.println("NumistaPiece with URL:" + url + " can't be loaded");
@@ -77,18 +81,20 @@ public class PieceController {
 
         if(piece != null){
             System.out.println("IN BASE: ID: " + piece.getId() + " : " + url);
+            return true;
         } else {
             System.out.println("NEW: " + url);
 
+            piece = new Piece();
             // Set PieceType
             if(numistaPiece.pieceType.equals(NumistaPiece.PieceType.Coin)){
-                piece = new PieceCoin();
+                piece.setType(PieceType.COIN);
             } else if(numistaPiece.pieceType.equals(NumistaPiece.PieceType.Banknote)){
-                piece = new PieceBanknote();
+                piece.setType(PieceType.BANKNOTE);
             } else if(numistaPiece.pieceType.equals(NumistaPiece.PieceType.Exonumia)){
-                piece = new PieceExonumia();
+                piece.setType(PieceType.EXONUMIA);
             } else {
-                piece = new Piece();
+                System.out.println("Find new PIECE TYPE!!!");
             }
 
             //Set name
@@ -228,10 +234,16 @@ public class PieceController {
                 } else if (DescriptionTitle.COMMENTS.equals(key)) {
                     description = new Description(DescriptionTitle.COMMENTS, value.text);
                 } else {
+                    if(key.equals("See also") || key.equals("")){
+//                        System.out.println("skip See also or empty");
+                    } else {
+                        System.out.println("Find new Description title");
+                    }
                     continue;
                 }
 
                 for (String photoLink : value.photoLinks) {
+
                     description.addPhoto(loadPhotoByLink(photoLink, piece, description.getTitle()));
                 }
                 piece.addDescription(description);
@@ -251,7 +263,7 @@ public class PieceController {
             if(collectionPiece == null){
                 collectionPiece = new CollectionPiece(numistaCollectionItem.date, numistaCollectionItem.tirage, numistaCollectionItem.comment);
                 piece.addCollectionPiece(collectionPiece);
-                System.out.println("Add new collection: " + collectionPiece.getDate() + " : " + collectionPiece.getComment());
+//                System.out.println("Add new collection: " + collectionPiece.getDate() + " : " + collectionPiece.getComment());
             }
         }
 
@@ -263,6 +275,8 @@ public class PieceController {
 
     // With checking in DB
     private Photo loadPhotoByLink(String photoLink, Piece piece, String descriptionTitle){
+        if(photoLink.isEmpty()) return null;
+
         Photo photo = photoRepository.findByLink(photoLink).block();
         if(photo != null){
             return photo;
@@ -287,13 +301,20 @@ public class PieceController {
                                 piece.getName() + "/" +
                                 descriptionTitle + "/";
 
-                        File outputFileFolder = new File(Photo.LOCAL_PRED + localPath);
+                        File outputFileFolder = new File(Application.LOCAL_PRED + localPath);
                         outputFileFolder.mkdirs();
                         localPath += photoLink.substring(photoLink.lastIndexOf("/") + 1);
-                        File outputFile = new File(Photo.LOCAL_PRED + localPath);
+                        File outputFile = new File(Application.LOCAL_PRED + localPath);
                         OutputStream fileOutputStream = new FileOutputStream(outputFile);
                         FileCopyUtils.copy(stream, fileOutputStream);
-                        return new Photo("numista.com", photoLink, localPath);
+
+                        Photo p = new Photo();
+                        p.setSource("numista.com");
+                        p.setLink(photoLink);
+                        p.setLocalPath(localPath);
+
+                        return p;
+//                        return new Photo("numista.com", photoLink, localPath);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -311,149 +332,5 @@ public class PieceController {
 
 
 
-    private NumistaPiece loadNumistaPiece(String url){
-
-        NumistaPiece numistaPiece = new NumistaPiece();
-
-
-        Document doc = null;
-        try {
-            doc = Jsoup.connect(url).get();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        //Name
-        Element nameElements = doc.selectFirst("#main_title");
-        numistaPiece.name = nameElements.selectFirst("h1").text();
-
-        //Type
-        Elements main_breadcrumb = doc.selectFirst("#main_breadcrumb").children();
-        ArrayList<String> mainBreadcrumbArray = new ArrayList<>();
-        for(Element span : main_breadcrumb){
-            mainBreadcrumbArray.add(span.selectFirst("span[itemprop=\"name\"]").text());
-        }
-
-        if(mainBreadcrumbArray.get(1).equals("Coins")){
-            numistaPiece.pieceType = NumistaPiece.PieceType.Coin;
-        } else if(mainBreadcrumbArray.get(1).equals("Banknotes")){
-            numistaPiece.pieceType = NumistaPiece.PieceType.Banknote;
-        } else if(mainBreadcrumbArray.get(1).equals("Exonumia")){
-            numistaPiece.pieceType = NumistaPiece.PieceType.Exonumia;
-        }
-
-
-        //Features
-        Elements ficheCaracteristiques = doc.select("#fiche_caracteristiques");
-        for (Element element : ficheCaracteristiques) {
-            Elements rows = element.select("tr");
-            for (Element row : rows){
-                numistaPiece.mainProperties.put(row.select("th").text(), row.select("td").text());
-                if(row.select("th").text().equals("Value")){
-                    Element first_td = row.select("td").first();
-                    if(first_td != null && first_td.textNodes().size() > 0) {
-                        numistaPiece.mainProperties.put(row.select("th").text(), first_td.textNodes().get(0).text());
-                    }
-                }
-            }
-        }
-
-        // set Territories
-
-        for(int i = 2; i < mainBreadcrumbArray.size() - 1; i++){
-            numistaPiece.addTerritory(mainBreadcrumbArray.get(i));
-        }
-
-
-        //Photo
-        Elements fichePhotos = doc.select("#fiche_photo");
-        for (Element element : fichePhotos) {
-            Elements hrefs = element.select("[href]");
-            for (Element href : hrefs){
-
-                if(href.select("img").attr("alt").contains("obverse")){
-                    numistaPiece.obversePhotoLink = href.select("a[href]").attr("href");
-                } else if(href.select("img").attr("alt").contains("reverse"))
-                    numistaPiece.reversePhotoLink = href.select("a[href]").attr("href");
-            }
-        }
-
-        //Description
-        Element ficheDescriptions = doc.selectFirst("#fiche_descriptions");
-
-        String currentTitle = null;
-        StringBuilder description = new StringBuilder();
-        ArrayList<String> photoLinks = new ArrayList<>();
-
-        for (Element element : ficheDescriptions.children()) {
-            if(currentTitle != null){
-                if(currentTitle.equals(DescriptionTitle.COMMENTS)){
-                    if(element.id().equals("fiche_comments")){
-                        description.append(description.length() != 0 ? "\n" + element.text() : element.text());
-
-                        Elements comments = element.children();
-
-                        for(Element comment : comments){
-                            if(comment.tag().equals(Tag.valueOf("a"))){
-                                photoLinks.add(comment.attr("href"));
-                            } else {
-                                description.append(description.length() != 0 ? "\n" + comment.text() : comment.text());
-                            }
-                        }
-                    }
-                } else {
-                    if(element.tag().equals(Tag.valueOf("a"))){
-                        photoLinks.add(element.attr("href"));
-                    } else {
-                        description.append(description.length() != 0 ? "\n" + element.text() : element.text());
-                    }
-                }
-            }
-
-            if(element.tag().equals(Tag.valueOf("h3")) || element.equals(ficheDescriptions.children().last())){
-                if(currentTitle != null){
-                    NumistaPiece.DescriptionItem descriptionItem = new NumistaPiece.DescriptionItem();
-                    descriptionItem.addText(description.toString());
-                    descriptionItem.photoLinks = photoLinks;
-                    numistaPiece.descriptionHashMap.put(currentTitle, descriptionItem);
-                }
-
-                currentTitle = element.text();
-                description = new StringBuilder();
-                photoLinks = new ArrayList<>();
-            }
-        }
-
-
-
-        //Collection
-        Elements tbodies = doc.select("table.collection").select("tbody");
-        for (Element tbody : tbodies){
-            if(tbody.attr("style").contains("display:none")){
-                continue;
-            }
-
-            Element tr = tbody.selectFirst("tr.date_row");
-            if(tr != null){
-                Elements tds = tr.select("td");
-                String date = "";
-                String tirage = "";
-                String comment = "";
-                for(Element td : tds){
-                    if(td.className().contains("date")){
-                        date = td.text();
-                    } else if(td.className().contains("tirage")){
-                        tirage = td.text();
-                    } else if(td.className().contains("comment")){
-                        comment = td.text();
-                    }
-                }
-                numistaPiece.addCollectionItem(date, tirage, comment);
-            }
-        }
-
-        return numistaPiece;
-    }
 
 }

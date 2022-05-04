@@ -7,30 +7,28 @@ import org.springframework.data.neo4j.core.schema.Node;
 @Node(labels = "PHOTO")
 public class Photo {
 
-    public static final String LOCAL_PRED = "/Users/kirillbobryakov/IDEAProjects/NumismatServer/files/";
 
     @Id
     @GeneratedValue
     private Long id;
-
 
     // For example numista.com
     private String source;
 
     private String link;
 
-    private String name;
+//    private String name;
     private String localPath;
 
-    public Photo(String link) {
-        this.link = link;
-    }
+//    public Photo(String link) {
+//        this.link = link;
+//    }
 
-    public Photo(String source, String link, String localPath) {
-        this.source = source;
-        this.link = link;
-        this.localPath = localPath;
-    }
+//    public Photo(String source, String link, String localPath) {
+//        this.source = source;
+//        this.link = link;
+//        this.localPath = localPath;
+//    }
 
     public Long getId() {
         return id;
@@ -56,13 +54,13 @@ public class Photo {
         this.link = link;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+//    public String getName() {
+//        return name;
+//    }
+//
+//    public void setName(String name) {
+//        this.name = name;
+//    }
 
     public String getLocalPath() {
         return localPath;

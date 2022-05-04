@@ -17,6 +17,8 @@ public class Piece {
     @GeneratedValue
     private Long id;
 
+    private String type;
+
     private String numistaURL;
 
     private String name;
@@ -67,6 +69,14 @@ public class Piece {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getName() {

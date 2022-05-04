@@ -115,6 +115,7 @@ public class NumistaPiece {
     public static class DescriptionItem {
         public String text;
         public ArrayList<String> photoLinks = new ArrayList<>();
+        public String mentions;
 
         public void addText(String text){
             this.text = text;

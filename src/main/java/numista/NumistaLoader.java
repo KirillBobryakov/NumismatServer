@@ -15,19 +15,25 @@ import java.util.ArrayList;
 public class NumistaLoader {
 
     public static void main(String[] args){
-        NumistaPiece numistaPiece = new NumistaPiece();
+//        NumistaPiece numistaPiece = loadNumistaPiece("https://en.numista.com/catalogue/pieces43.html");
+        NumistaPiece numistaPiece = loadNumistaPiece("https://en.numista.com/catalogue/pieces2087.html");
 
+        System.out.println(numistaPiece);
+    }
+
+    public static NumistaPiece loadNumistaPiece(String url){
+        NumistaPiece numistaPiece = new NumistaPiece();
 
         Document doc = null;
         try {
-            doc = Jsoup.connect("https://en.numista.com/catalogue/pieces4627.html").get();
+            doc = Jsoup.connect(url).get();
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
 
         //Name
-        Element nameElements = doc.selectFirst("#main_title");
-        System.out.println(nameElements.selectFirst("h1").text());
+        numistaPiece.name = doc.selectFirst("#main_title").selectFirst("h1").text();
 
 
         //Type
@@ -62,6 +68,8 @@ public class NumistaLoader {
 
         // set Territories
 
+        //todo from 2 till size Russia - Russia
+
         for(int i = 2; i < mainBreadcrumbArray.size() - 1; i++){
             numistaPiece.addTerritory(mainBreadcrumbArray.get(i));
         }
@@ -83,48 +91,69 @@ public class NumistaLoader {
         //Description
         Element ficheDescriptions = doc.selectFirst("#fiche_descriptions");
 
-        String currentTitle = null;
+        String currentTitle = "";
         StringBuilder description = new StringBuilder();
         ArrayList<String> photoLinks = new ArrayList<>();
+        StringBuilder mentions = new StringBuilder();
 
         for (Element element : ficheDescriptions.children()) {
-            if(currentTitle != null){
-                if(currentTitle.equals(DescriptionTitle.COMMENTS)){
-                    if(element.id().equals("fiche_comments")){
-                        description.append(description.length() != 0 ? "\n" + element.text() : element.text());
+            if(element.className().equals("tooltip")) continue;
+            if(element.text().equals("") && !element.tag().equals(Tag.valueOf("a"))) continue;
 
-                        Elements comments = element.children();
-
-                        for(Element comment : comments){
-                            if(comment.tag().equals(Tag.valueOf("a"))){
-                                photoLinks.add(comment.attr("href"));
-                            } else {
-                                description.append(description.length() != 0 ? "\n" + comment.text() : comment.text());
-                            }
-                        }
-                    }
-                } else {
-                    if(element.tag().equals(Tag.valueOf("a"))){
-                        photoLinks.add(element.attr("href"));
-                    } else {
-                        description.append(description.length() != 0 ? "\n" + element.text() : element.text());
-                    }
-                }
+            if(element.className().equals("mentions")) {
+                mentions.append((mentions.length() == 0) ? element.text() : "|" + element.text());
+                continue;
             }
 
             if(element.tag().equals(Tag.valueOf("h3")) || element.equals(ficheDescriptions.children().last())){
-                if(currentTitle != null){
-                    NumistaPiece.DescriptionItem descriptionItem = new NumistaPiece.DescriptionItem();
-                    descriptionItem.addText(description.toString());
-                    descriptionItem.photoLinks = photoLinks;
-                    numistaPiece.descriptionHashMap.put(currentTitle, descriptionItem);
-                }
+                NumistaPiece.DescriptionItem descriptionItem = new NumistaPiece.DescriptionItem();
+                descriptionItem.addText(description.toString());
+                descriptionItem.photoLinks = photoLinks;
+                descriptionItem.mentions = mentions.toString();
+                numistaPiece.descriptionHashMap.put(currentTitle, descriptionItem);
 
 
                 currentTitle = element.text();
                 description = new StringBuilder();
                 photoLinks = new ArrayList<>();
+                mentions = new StringBuilder();
+                continue;
             }
+
+            if(currentTitle.equals(DescriptionTitle.MINTS) && element.tag().equals(Tag.valueOf("table")) && element.id().equals("fiche_mint")){
+                Elements elements = element.select("tr");
+                for(Element elem : elements){
+                    description.append(description.length() != 0 ? "\n" + elem.text() : elem.text());
+                }
+                continue;
+            }
+
+            if(currentTitle.equals(DescriptionTitle.COMMENTS)){
+                if(element.id().equals("fiche_comments")){
+                    description.append(description.length() != 0 ? "\n" + element.text() : element.text());
+
+                    Elements comments = element.children();
+
+                    for(Element comment : comments){
+                        if(comment.tag().equals(Tag.valueOf("a"))){
+                            photoLinks.add(comment.attr("href"));
+                        }
+                        if(comment.tag().equals(Tag.valueOf("img"))){
+                            photoLinks.add(comment.attr("src"));
+                        }
+//                        else {
+//                            description.append(description.length() != 0 ? "\n" + comment.text() : comment.text());
+//                        }
+                    }
+                }
+            } else {
+                if(element.tag().equals(Tag.valueOf("a"))){
+                    photoLinks.add(element.attr("href"));
+                } else {
+                    description.append(description.length() != 0 ? "\n" + element.text() : element.text());
+                }
+            }
+
         }
 
 
@@ -156,7 +185,7 @@ public class NumistaLoader {
         }
 
         System.out.println(numistaPiece);
-
+        return numistaPiece;
     }
 
 }
